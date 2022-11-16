@@ -1,5 +1,7 @@
 package fp.humancoding
 
+import jdk.internal.net.http.common.Log
+import org.graalvm.compiler.debug.DebugOptions.Log
 import java.util.Collections.sort
 
 /*
@@ -97,9 +99,65 @@ fun main(args: Array<String>) {
 
     val objComparable : Comparator<Int> = object : Comparator<Int>{
         override fun compare(o1: Int, o2:Int):Int{
-            return TODO()
+            return o1- o2
         }
     }
+    sort(numbers, objComparable)
     //equals 는 추상메소드가 아닌가?
 
+    //custom SAM
+//    val obCountJava = object : MyCountable{
+//        override fun myCount(list: MutableList<Int>?): Int {
+//            return list?.size?:0
+//        }
+//    }
+
+    val obCountJava =  MyCountable { list -> list?.size?:0}
+    val objCountjava = MyCountable{it?.size?:0} //SAM 축약표현
+    println()
+    println("java SAMFI objCountJava.MyCount(null) = ${objCountjava.myCount(null)}")
+    println("java SAMFI objCountJava.MyCount(numbers) = ${objCountjava.myCount(numbers)}")
+    //
+//    val objCountKt = object : MyCountableKt {
+//        override fun myCount(list: List<Int>): Int {
+//            return list.size
+//        }
+//    }
+    //자바와 달리 코틀린에서느 sam 을 사용할 수 없다?
+   // val objCountKt =  MyCountableKt { list:List<Int> ->  list.size }
+   // val objCountKt =  MyCountableKt { it.size } //error
+    val objCountTypeAlias : MyCountableTypeAlias = object : MyCountableTypeAlias{
+        override fun invoke(p1: MutableList<Int>): Int {
+           //코틀린에서 함수형은 제네릭 인터페이스
+            //invoke 라는 추상 메소드를 가지고 있다  call 하는 기호
+            return p1.size
+        }
+
+    }
+    /*
+
+     */
+    println("objCountTypeAlias.invoke() = ${objCountTypeAlias.invoke(numbers)}")
+    println("objCountTypeAlias()  ${objCountTypeAlias(numbers)}")
+
+    val objCountTypeAliasLambda : MyCountableTypeAlias = {
+        list: MutableList<Int> -> list.size
+    }
+    val objCountTypeAliasAnony : (MutableList<Int>) -> Int = fun (list:MutableList<Int>) = list.size
+
+    println("objCountTypeAliasLambda() = ${objCountTypeAliasLambda(numbers)}")
+    println("objCountTypeAliasAnony() = ${objCountTypeAliasAnony(numbers)}")
+
+    val mcList : List<MyCountableTypeAlias> = listOf(objCountTypeAlias,objCountTypeAliasLambda ,objCountTypeAliasAnony)
+
+    mcList.map { it (numbers) }.forEach(::println)
+
+
+
 }
+
+interface MyCountableKt{
+    fun myCount(list:List<Int>) :Int
+}
+
+typealias MyCountableTypeAlias = (MutableList<Int>) -> Int
