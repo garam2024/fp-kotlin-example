@@ -1,7 +1,6 @@
 package fp.humancoding
 
-import jdk.internal.net.http.common.Log
-import org.graalvm.compiler.debug.DebugOptions.Log
+
 import java.util.Collections.sort
 
 /*
